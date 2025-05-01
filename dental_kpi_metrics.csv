@@ -1,8 +1,8 @@
-KPI,Formula,Low,Target,Stretch
-Collection %,"total_collections / net_production","< 95 %","99 – 103 %","> 105 %"
-Case-Acceptance % (by $),"accepted_tx$ / proposed_tx$","< 50 %","60 %","≥ 70 %"
-Production $/Hr — Doctor,"net_production / clinical_hrs","< 300","300 – 500","> 550"
-Production $/Hr — Hygiene,"net_production / clinical_hrs","< 120","150 – 200","> 225"
-Call-Answer Rate,"answered_calls / total_calls","< 80 %","85 – 90 %","> 90 %"
-Hygiene Re-appt %,"next_hyg_appt / new_patients","< 70 %","80 %","≥ 85 %"
-Write-offs %,"write_offs / (production + adjustments)","> 5 %","< 3 %","< 2 %"
+KPI                      , Formula                                  , Low     , Target      , Stretch
+Collection %             , "total_collections / net_production"     , "< 95 %", "99 – 103 %", "> 105 %"
+Case-Acceptance % (by $) , "accepted_tx$ / proposed_tx$"            , "< 50 %", "60 %"      , "≥ 70 %"
+Production $/Hr — Doctor , "net_production / clinical_hrs"          , "< 300" , "300 – 500" , "> 550"
+Production $/Hr — Hygiene, "net_production / clinical_hrs"          , "< 120" , "150 – 200" , "> 225"
+Call-Answer Rate         , "answered_calls / total_calls"           , "< 80 %", "85 – 90 %" , "> 90 %"
+Hygiene Re-appt %        , "next_hyg_appt / new_patients"           , "< 70 %", "80 %"      , "≥ 85 %"
+Write-offs %             , "write_offs / (production + adjustments)", "> 5 %" , "< 3 %"     , "< 2 %"
