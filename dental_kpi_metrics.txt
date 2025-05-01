@@ -1,0 +1,80 @@
+Dental Practice KPI Metrics and Benchmarks
+=====================================
+
+KPI: Collection %
+-----------------
+Formula: "total_collections / net_production"
+
+Benchmarks:
+- Low: "< 95 %"
+- Target: "99 – 103 %"
+- Stretch: "> 105 %"
+
+---
+
+KPI: Case-Acceptance % (by $)
+-----------------------------
+Formula: "accepted_tx$ / proposed_tx$"
+
+Benchmarks:
+- Low: "< 50 %"
+- Target: "60 %"
+- Stretch: "≥ 70 %"
+
+---
+
+KPI: Production $/Hr — Doctor
+-----------------------------
+Formula: "net_production / clinical_hrs"
+
+Benchmarks:
+- Low: "< 300"
+- Target: "300 – 500"
+- Stretch: "> 550"
+
+---
+
+KPI: Production $/Hr — Hygiene
+------------------------------
+Formula: "net_production / clinical_hrs"
+
+Benchmarks:
+- Low: "< 120"
+- Target: "150 – 200"
+- Stretch: "> 225"
+
+---
+
+KPI: Call-Answer Rate
+---------------------
+Formula: "answered_calls / total_calls"
+
+Benchmarks:
+- Low: "< 80 %"
+- Target: "85 – 90 %"
+- Stretch: "> 90 %"
+
+---
+
+KPI: Hygiene Re-appt %
+----------------------
+Formula: "next_hyg_appt / new_patients"
+
+Benchmarks:
+- Low: "< 70 %"
+- Target: "80 %"
+- Stretch: "≥ 85 %"
+
+---
+
+KPI: Write-offs %
+-----------------
+Formula: "write_offs / (production + adjustments)"
+
+Benchmarks:
+- Low: "> 5 %"
+- Target: "< 3 %"
+- Stretch: "< 2 %"
+
+---
+
