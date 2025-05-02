@@ -247,30 +247,47 @@ class OpenAIClient:
         self, 
         df: pd.DataFrame, 
         system_prompt: str,
-        assistant_id: Optional[str] = None
+        benchmark_df: Optional[pd.DataFrame] = None,
+        assistant_id: Optional[str] = None,
+        seed: Optional[int] = None
     ) -> Dict[str, Any]:
         """
         Process KPI data using the OpenAI Assistant and return the response.
         
         This is the main helper function that encapsulates the entire API flow:
-        1. Upload DataFrame data
-        2. Create a thread
-        3. Add a message with analysis instructions
-        4. Run the assistant
-        5. Extract and return the response
+        1. Analyze and benchmark KPI data
+        2. Sanitize DataFrame data
+        3. Upload sanitized data
+        4. Create a thread
+        5. Add a message with analysis instructions and context
+        6. Run the assistant
+        7. Extract and return the response
         
         Args:
             df: The DataFrame containing KPI data
             system_prompt: The system prompt to use for the analysis
+            benchmark_df: Optional DataFrame containing benchmark definitions
             assistant_id: Optional ID of an existing assistant to use
+            seed: Optional random seed for deterministic results
             
         Returns:
-            A dictionary containing the response content
+            A dictionary containing the response content and analysis results
             
         Raises:
             Various exceptions based on what fails in the process
         """
         try:
+            # Import analyzer here to avoid circular imports
+            from src.data.analyzer import analyze_kpi_metrics, sanitize_dataframe
+            
+            # Analyze KPI metrics
+            logger.info("Analyzing KPI data against benchmarks")
+            analysis_results = analyze_kpi_metrics(df, benchmark_df, seed)
+            
+            # Sanitize the DataFrame for upload
+            logger.info("Sanitizing DataFrame for upload")
+            sanitized_df = sanitize_dataframe(df)
+            
             # Create assistant if ID not provided
             if not assistant_id:
                 logger.info("Creating new assistant")
@@ -283,14 +300,22 @@ class OpenAIClient:
                 assistant_id = assistant.id
                 logger.info(f"Assistant created with ID: {assistant_id}")
             
-            # Upload the DataFrame
-            file_id = self.upload_dataframe(df)
+            # Upload the sanitized DataFrame
+            file_id = self.upload_dataframe(sanitized_df)
             
             # Create a thread
             thread = self.create_thread()
             
-            # Add a message with the file
-            message_content = "Please analyze the attached dental KPI data according to the system prompt."
+            # Add a message with the file and analysis context
+            message_content = (
+                "Please analyze the attached dental KPI data according to the system prompt. "
+                f"The data contains {len(df)} rows and {len(df.columns)} columns. "
+                f"There are {analysis_results['summary']['metrics_below_target']} metrics below target, "
+                f"{analysis_results['summary']['metrics_at_target']} at target, and "
+                f"{analysis_results['summary']['metrics_above_target']} above target. "
+                f"The following flags have been identified: {', '.join(analysis_results['flags'])}"
+            )
+            
             self.add_message(
                 thread_id=thread.id,
                 content=message_content,
@@ -302,6 +327,9 @@ class OpenAIClient:
                 thread_id=thread.id,
                 assistant_id=assistant_id
             )
+            
+            # Include the analysis results in the response
+            response["analysis_results"] = analysis_results
             
             return response
             
