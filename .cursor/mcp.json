@@ -16,6 +16,9 @@
                 "DEFAULT_SUBTASKS": 5,
                 "DEFAULT_PRIORITY": "medium"
             }
-        }
+        },
+        "linear_composio": {
+            "url": "https://mcp.composio.dev/linear/lively-prehistoric-diamond-ikrjd-?agent=cursor"
+        }   
     }
 }
