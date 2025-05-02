@@ -1,41 +1,109 @@
-# Dental Analytics Email Assistant
+# Dental Email Assistant
 
-This repository contains the components for the Dental Analytics Email Assistant, a tool designed to transform dental practice key performance indicator (KPI) data from CSV/TSV files into concise, action-oriented executive emails.
+A command-line tool that generates executive summary emails based on dental practice KPI metrics.
 
-## Project Purpose
+## Features
 
-The primary goal of this project is to automate the reporting of dental practice performance metrics to leadership. It aims to provide a system that can:
+- Loads and validates dental KPI data from CSV files
+- Analyzes KPI metrics using OpenAI's Assistant API
+- Generates concise, executive-style summary emails (≤ 350 words)
+- Highlights important metrics with warnings for low-band KPIs
+- Provides SMART recommendations based on data analysis
+- Supports saving outputs as markdown and JSON files
 
-- Process structured data containing dental KPIs.
-- Benchmark current performance against predefined Low, Target, and Stretch bands.
-- Identify variances (Risks and Opportunities).
-- Analyze trends over different timeframes.
-- Suggest potential root causes and improvement levers based on research data.
-- Generate SMART recommendations for action.
-- Compose executive-level emails summarizing the findings and recommendations.
+## Installation
 
-## Components
+This project uses Poetry for dependency management.
 
-- `system-prompt.md`: This document contains the detailed instructions and configuration for the AI assistant, including its role, communication style, data input requirements, analysis workflow, email skeleton, dynamic rules, and output format.
-- `convert_to_jsonl.py`: Likely a script used to convert raw data into a JSONL format suitable for processing or storage.
-- `case_acceptance_chunks.jsonl`: Data related to case acceptance, potentially used for root cause analysis or benchmarking.
-- `dental_kpi_metrics.csv`: A sample or input file containing dental KPI data.
-- `Case Acceptance Science Research_.txt`: Research or reference material related to case acceptance, possibly used to inform the root cause analysis.
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/dental-email-assistant.git
+cd dental-email-assistant
 
-## How it Works (Conceptual Workflow)
+# Install dependencies with Poetry
+poetry install
 
-1.  **Data Input**: KPI data is provided in CSV/TSV format.
-2.  **Data Processing**: The data is validated and potentially converted (e.g., using `convert_to_jsonl.py`).
-3.  **Analysis**: The AI assistant (configured by `system-prompt.md`) processes the data, performs benchmarking, variance analysis, trend analysis, and root cause hinting.
-4.  **Recommendation Generation**: SMART recommendations are built based on the analysis.
-5.  **Email Composition**: An executive email is generated using the predefined skeleton and dynamic rules.
+# Activate the virtual environment
+poetry shell
+```
 
-## Setup and Usage
+## Configuration
 
-Specific setup and usage instructions depend on the environment where the AI assistant runs (e.g., a custom GPT or OpenAI Assistant). Refer to the `system-prompt.md` for the configuration details required to set up the assistant.
+Set the required environment variables:
 
-To use the system:
+```bash
+# For OpenAI API access
+export OPENAI_API_KEY=your_openai_api_key
 
-1.  Prepare your dental KPI data in the required CSV/TSV format.
-2.  Upload the data to the configured AI assistant.
-3.  The assistant will process the data and output a JSON object containing the composed email (in Markdown), flags, and a KPI summary table. 
+# Optional: Adjust logging level
+export LOG_LEVEL=INFO  # Options: DEBUG, INFO, WARNING, ERROR, CRITICAL
+```
+
+You can also create a `.env` file in the project root with these variables.
+
+## Usage
+
+```bash
+# Analyze KPI data and display results
+dental-email --file path/to/your/kpi_data.csv
+
+# Save the generated email and JSON to the output directory
+dental-email --file path/to/your/kpi_data.csv --save
+```
+
+## Input Data Format
+
+The tool expects a CSV file with the following columns:
+- Date: Date of the metrics
+- Location: Dental practice location
+- MetricName: Name of the KPI metric
+- Value: Actual metric value
+- Target: Target metric value
+
+Example:
+```csv
+Date,Location,MetricName,Value,Target
+2023-01-01,Downtown Office,Case Acceptance Rate,68,75
+2023-01-01,Downtown Office,Production Per Hour,350,400
+...
+```
+
+## Project Structure
+
+```
+dental-email-assistant/
+├── src/
+│   ├── data/        # CSV loading/validation logic
+│   ├── openai/      # OpenAI API interaction
+│   ├── cli/         # Command-line interface
+│   ├── email/       # Email formatting
+│   ├── utils/       # Utilities like logging
+│   └── main.py      # Application entry point
+├── tests/           # Test files
+├── output/          # Generated files
+├── pyproject.toml   # Poetry configuration
+└── README.md        # This file
+```
+
+## Development
+
+### Running Tests
+
+```bash
+# Run the test suite
+poetry run pytest
+
+# Run with coverage report
+poetry run pytest --cov=src
+```
+
+### Type Checking
+
+```bash
+# Run mypy type checker
+poetry run mypy src
+```
+
+## License
+
+[MIT](LICENSE) 
