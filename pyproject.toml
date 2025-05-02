@@ -12,6 +12,7 @@ openai = "^1.76.2"
 pandas = "^2.2.3"
 typer = "^0.15.3"
 rich = "^14.0.0"
+requests = "^2.31.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.5"
