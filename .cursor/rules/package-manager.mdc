@@ -1,0 +1,51 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# Package Manager Requirements
+
+This rule defines the package manager requirements for the Dental Analytics Email Assistant project.
+
+## Poetry for Python Projects
+
+For this Python-based project, **Poetry** is the required package manager:
+
+- All dependencies must be managed through Poetry
+- Direct use of pip is prohibited except within Poetry scripts
+- Requirements must be defined in `pyproject.toml`, not requirements.txt
+
+## Key Benefits and Usage
+
+Poetry provides several advantages aligned with our AI Commandments:
+
+1. **No Bloat, No Repeats** (Commandment #9):
+   - Deterministic builds through lockfiles
+   - Clear separation of dev vs. production dependencies
+   - Virtual environment management built-in
+
+2. **Tech Stack Must Match** (Commandment #10):
+   - Poetry is the Python-specific equivalent to pnpm for JS projects
+   - Consistent dependency management approach across technologies
+
+## Implementation
+
+When working with this project:
+
+1. Install dependencies with `poetry install`
+2. Add new dependencies with `poetry add [package]`
+3. Add dev dependencies with `poetry add --dev [package]`
+4. Run commands in the poetry environment with `poetry run [command]`
+5. Update dependencies with `poetry update`
+
+## Configuration
+
+The project must include:
+
+- A properly configured `pyproject.toml` file
+- Poetry's lockfile must be committed to version control
+- Virtual environments should be excluded from version control
+
+## Migration from requirements.txt
+
+The current [requirements.txt](mdc:requirements.txt) must be migrated to Poetry's format as part of the project setup.

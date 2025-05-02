@@ -1,0 +1,47 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# Dental Analytics Email Assistant Project Structure
+
+This rule defines the recommended project structure following the "Structure by Feature, Not File Type" principle from our AI Commandments.
+
+## Current Structure
+- [README.md](mdc:README.md): Project overview and documentation
+- [system-prompt.md](mdc:system-prompt.md): AI assistant configuration
+- [requirements.txt](mdc:requirements.txt): Python dependencies
+- [upload_to_vectorstore.py](mdc:upload_to_vectorstore.py): Script for uploading research data to vector database
+- [dental_kpi_metrics.csv](mdc:dental_kpi_metrics.csv): Sample KPI data
+- [Case Acceptance Science Research_.txt](mdc:Case Acceptance Science Research_.txt): Research material
+
+## Feature-Based Structure (To Be Implemented)
+We organize code by domain/feature rather than by file type:
+
+```
+email-assistant/
+├── src/
+│   ├── data_processing/        # All data loading/validation logic
+│   ├── analysis/               # All KPI analysis components
+│   ├── insights/               # Root cause and recommendation logic
+│   ├── email_generation/       # Email composition functionality
+│   ├── types/                  # TypeScript types for all entities
+│   └── main.py                 # Application entry point
+├── data/                       # Data storage
+├── tests/                      # Test files matching src structure
+```
+
+## Development Principles
+
+1. **Single Responsibility**: Each file should have one clear purpose
+2. **Descriptive Naming**: Use specific, meaningful names for all files and functions
+3. **Backend First**: Implement data processing before presentation logic
+4. **Types Are Law**: Define strict types for all data structures
+5. **Build Incrementally**: Complete one logical component before moving to the next
+
+## Key Files to Reference
+- Data processing should start with [dental_kpi_metrics.csv](mdc:dental_kpi_metrics.csv)
+- Research data comes from [Case Acceptance Science Research_.txt](mdc:Case Acceptance Science Research_.txt)
+- Vector storage utilities from [upload_to_vectorstore.py](mdc:upload_to_vectorstore.py)
+
+When implementing new features, reference this structure to ensure consistency.

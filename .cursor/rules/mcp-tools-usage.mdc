@@ -1,0 +1,39 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# MCP Tools Usage Requirements
+
+This rule defines the mandatory MCP tools to be used throughout the development of the Dental Analytics Email Assistant project.
+
+## Required MCP Tools
+
+### 1. Context7 MCP
+- **Must be used** for all project documentation and tech stack implementation
+- Single source of truth that trumps all other information sources
+- Required before implementing any feature or component
+- Reference libraries: Python data processing, analysis, and email generation libraries
+
+### 2. Code Reasoning MCP
+- **Must be used** iteratively during development
+- Required for analyzing all code logic decisions
+- Must be applied before finalizing any code implementation
+- Use for validating approach to data processing, analysis algorithms, and email generation logic
+
+### 3. Brave MCP
+- The **only permitted web search tool**
+- Replaces Cursor's native web search functionality completely
+- Must be used for all external information needs
+
+## Implementation Guidelines
+
+When working on the [upload_to_vectorstore.py](mdc:upload_to_vectorstore.py) or any new module:
+
+1. First, use Context7 MCP to understand relevant documentation
+2. Use Code Reasoning MCP to validate the logic approach
+3. If external information is needed, exclusively use Brave MCP
+
+## Enforcement
+
+These tools must be used in the specified ways without exception. The Context7 information always takes precedence over other sources when there are conflicts.

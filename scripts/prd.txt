@@ -1,0 +1,72 @@
+# Dental Analytics Email Assistant – Proof-of-Concept
+
+## Purpose
+Build a lightweight, Python-based CLI tool that converts a Google-Sheets CSV export of dental KPIs into an executive-ready email draft, following the rules in `system-prompt.md`. This proof of concept validates the data-analysis workflow and OpenAI Assistants v2 integration before investing in full automation.
+
+## Problem Statement
+Leadership needs a consistent, data-driven weekly summary across multiple dental locations. Creating these emails manually is time-consuming and error-prone. An AI assistant can analyze uploaded metrics, overlay benchmarks, and output an action-oriented email within seconds.
+
+## Goals & Success Metrics
+- Accurate analysis: ≥ 95% of benchmark bands and variance flags match manual review
+- Email quality: Leadership survey ≥ 4/5 for clarity & actionability
+- Ease of use: Run time ≤ 2 min on typical CSV (≤ 5k rows)
+- Reproducibility: Deterministic outputs when fed identical CSV + seed
+
+## Target Users
+- Ops leader who owns weekly reporting
+- Regional managers reviewing multiple locations
+- Data analyst validating the output
+
+## User Journey
+1. Start CLI → `python dental_report.py --file weekly_metrics.csv`
+2. CLI previews first rows, prompts "Proceed?"
+3. User confirms → analysis runs (status spinner)
+4. CLI displays Markdown email + flags/KPI table
+5. User copies email into Gmail or saves JSON/MD via `--save` flag
+6. Optional iterative commands: `r` (regenerate), `f` (filter site), `q` (quit)
+
+## Functional Requirements
+- Accept CSV via `--file` or URL via `--sheet` (public CSV link)
+- Validate schema (columns A–V, correct types) & report issues
+- Query OpenAI Assistant v2 using `system-prompt.md` + code-interpreter tool
+- Upload sanitized DataFrame to assistant; poll until complete
+- Parse returned JSON; print email in Markdown + flags + KPI table
+- Color-code CLI output (green/on-track, red/behind, blue/ahead)
+- `--save` flag writes `{timestamp}_report.json` & `{timestamp}_email.md` to `/output`
+- Support interactive loop: `r`, `f <location>`, `q` without new CSV upload
+
+## Non-Functional Requirements
+- Python ≥ 3.9, packages pinned using Poetry
+- Strict typing with `mypy`; no `any`
+- Unit tests ≥ 80% coverage (`pytest`, `hypothesis`)
+- Runtime memory ≤ 1 GB; completes in < 2 min for 5k-row CSV
+- Handles network/API failures with graceful messages & retry prompt
+
+## Out of Scope (for PoC)
+- Direct Google Sheets API integration
+- Gmail Draft creation
+- Automated triggers (Make.com, webhooks)
+- Full Supabase/pgvector backend
+
+## Acceptance Criteria
+1. Running CLI with sample `dental_kpi_metrics.csv` produces a JSON envelope conforming to § 8 of system prompt.
+2. Email draft ≤ 350 words, uses executive tone, bullet lists, **bold** key figures, SMART recommendations.
+3. Low-band KPIs are prepended with "⚠️".
+4. CLI exits 0 on success; non-zero on validation or API failure.
+5. All unit tests pass via `pytest`.
+
+## Implementation Details
+- Structure code by feature, not file type
+- Every file has one purpose (single-responsibility principle)
+- Use descriptive, specific names
+- Define and use strict TypeScript types
+- Keep code clean, readable, and free of duplication
+- Follow feature-based structure
+- Use Poetry for dependency management
+
+## Required Technologies
+- Python 3.9+
+- OpenAI Assistants API v2
+- Poetry for package management 
+- pytest and hypothesis for testing
+- mypy for type checking 

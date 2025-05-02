@@ -1,0 +1,131 @@
+{
+  "meta": {
+    "generatedAt": "2025-05-02T02:00:12.093Z",
+    "tasksAnalyzed": 15,
+    "thresholdScore": 5,
+    "projectName": "Your Project Name",
+    "usedResearch": false
+  },
+  "complexityAnalysis": [
+    {
+      "taskId": 1,
+      "taskTitle": "Setup Project Structure and Dependencies",
+      "complexityScore": 3,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the project setup task into subtasks covering Poetry initialization, dependency installation, directory structure creation, and documentation setup. Include specific commands and validation steps for each subtask.",
+      "reasoning": "This is a relatively straightforward setup task with clear requirements. The complexity is low as it involves standard project initialization steps, but requires attention to detail for dependency versions and structure."
+    },
+    {
+      "taskId": 2,
+      "taskTitle": "Implement CSV Loading and Validation",
+      "complexityScore": 5,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Divide the CSV loading and validation task into subtasks covering file path/URL detection, pandas integration, schema validation, error handling for different scenarios, and DataFrame sanitization. Include specific validation checks for columns A-V.",
+      "reasoning": "This task has moderate complexity due to multiple input sources (local/URL), schema validation requirements, and various error handling scenarios. It requires careful implementation of validation logic and error handling."
+    },
+    {
+      "taskId": 3,
+      "taskTitle": "Create OpenAI Assistant Integration",
+      "complexityScore": 7,
+      "recommendedSubtasks": 6,
+      "expansionPrompt": "Break down the OpenAI Assistants API integration into subtasks covering client initialization, assistant creation with code-interpreter, data upload methods, thread management, execution monitoring, and error handling with retry logic.",
+      "reasoning": "This task has high complexity due to the multi-step process of working with the OpenAI Assistants API, handling asynchronous operations, and implementing robust error handling with retries for API rate limits."
+    },
+    {
+      "taskId": 4,
+      "taskTitle": "Implement System Prompt Integration",
+      "complexityScore": 4,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Divide the system prompt integration task into subtasks covering prompt file loading, format validation (especially section 8), error handling for missing files, and integration with the OpenAI Assistant API.",
+      "reasoning": "This task has moderate complexity focused on file handling and validation. The main challenges are ensuring proper formatting and validating that all required sections are present in the system prompt."
+    },
+    {
+      "taskId": 5,
+      "taskTitle": "Develop JSON Response Parser",
+      "complexityScore": 6,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the JSON response parser into subtasks covering extraction from assistant responses, schema validation against section 8 requirements, error handling for malformed JSON, typed data structure creation, and specific data extraction (email content, KPI flags, metrics table).",
+      "reasoning": "This task has significant complexity due to the need to parse potentially inconsistent AI-generated JSON, validate against a schema, and create typed structures. Error handling for malformed responses adds additional complexity."
+    },
+    {
+      "taskId": 6,
+      "taskTitle": "Build CLI Interface",
+      "complexityScore": 5,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Divide the CLI interface implementation into subtasks covering argument parsing setup, interactive command handling, progress indication with status spinner, color-coded output implementation, and input validation with error messaging.",
+      "reasoning": "Building a CLI has moderate complexity due to the need to handle multiple command types, implement interactive features, and provide good user feedback. The status spinner and color coding add additional implementation details."
+    },
+    {
+      "taskId": 7,
+      "taskTitle": "Implement Data Preview and Confirmation",
+      "complexityScore": 3,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the data preview functionality into subtasks covering DataFrame preview formatting, terminal display optimization, user confirmation prompt implementation, and input handling with appropriate program flow control.",
+      "reasoning": "This task has lower complexity as it primarily involves data display and simple user interaction. The main challenges are formatting the preview to be readable in a terminal and handling user confirmation properly."
+    },
+    {
+      "taskId": 8,
+      "taskTitle": "Develop Email Markdown Formatter",
+      "complexityScore": 6,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Divide the email markdown formatter into subtasks covering JSON to markdown conversion, word count limitation (≤350 words), executive tone implementation, KPI formatting with warning symbols, and table formatting with proper alignment.",
+      "reasoning": "This task has higher complexity due to the need to generate well-formatted markdown with specific constraints on length, tone, and formatting. Ensuring the output meets all requirements while maintaining readability requires careful implementation."
+    },
+    {
+      "taskId": 9,
+      "taskTitle": "Implement Color-Coded CLI Output",
+      "complexityScore": 4,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the color-coded output implementation into subtasks covering colorama setup and configuration, KPI status color mapping functions, email content coloring implementation, and KPI table color formatting.",
+      "reasoning": "This task has moderate complexity focused on applying consistent color coding across different output types. The main challenge is ensuring colors are applied correctly based on KPI status while maintaining readability."
+    },
+    {
+      "taskId": 10,
+      "taskTitle": "Add File Output Functionality",
+      "complexityScore": 3,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Divide the file output functionality into subtasks covering output directory creation/validation, timestamp-based filename generation, JSON file writing implementation, and markdown file writing with appropriate error handling.",
+      "reasoning": "This task has lower complexity as it primarily involves file I/O operations with standard error handling. The main challenges are generating appropriate filenames and ensuring the output directory exists."
+    },
+    {
+      "taskId": 11,
+      "taskTitle": "Implement Location Filtering",
+      "complexityScore": 5,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the location filtering functionality into subtasks covering location input parsing, JSON data filtering logic, filtered display updating for both email and KPI table, and error handling for invalid locations or empty results.",
+      "reasoning": "This task has moderate complexity due to the need to filter complex JSON data and update multiple display components. Handling edge cases like invalid locations or empty results adds additional complexity."
+    },
+    {
+      "taskId": 12,
+      "taskTitle": "Add Regeneration Functionality",
+      "complexityScore": 5,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Divide the regeneration functionality into subtasks covering user confirmation implementation, OpenAI thread recreation, maintaining consistent instructions and data, and display updating with new analysis results.",
+      "reasoning": "This task has moderate complexity due to the need to manage OpenAI API state and ensure consistent data handling. The main challenge is maintaining the same instructions and data while creating a new analysis thread."
+    },
+    {
+      "taskId": 13,
+      "taskTitle": "Implement Error Handling and Retries",
+      "complexityScore": 7,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the error handling implementation into subtasks covering network error detection and handling, API failure response processing, exponential backoff retry mechanism, user-friendly error message generation, and interactive retry prompt implementation.",
+      "reasoning": "This task has high complexity due to the need to handle various error types, implement sophisticated retry logic, and provide helpful user feedback. The exponential backoff implementation and comprehensive error categorization add significant complexity."
+    },
+    {
+      "taskId": 14,
+      "taskTitle": "Write Comprehensive Unit Tests",
+      "complexityScore": 8,
+      "recommendedSubtasks": 7,
+      "expansionPrompt": "Divide the unit testing task into subtasks covering test environment setup, mock implementation for external dependencies, core functionality test cases, error handling test cases, property-based testing with hypothesis, integration test scenarios, and code coverage measurement and reporting.",
+      "reasoning": "This task has high complexity due to the need to test multiple components with various dependencies and edge cases. Mocking external APIs, achieving high code coverage, and implementing property-based testing add significant complexity."
+    },
+    {
+      "taskId": 15,
+      "taskTitle": "Implement Type Checking with mypy",
+      "complexityScore": 6,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the type checking implementation into subtasks covering mypy configuration setup, custom type definitions for complex structures, function and class annotation, CI pipeline integration, and documentation of type expectations in docstrings.",
+      "reasoning": "This task has significant complexity due to the strict requirement of no 'any' types and the need to create custom types for complex data structures. Ensuring complete type coverage across the codebase requires careful implementation."
+    }
+  ]
+}
