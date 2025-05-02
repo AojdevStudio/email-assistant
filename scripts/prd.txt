@@ -56,17 +56,20 @@ Leadership needs a consistent, data-driven weekly summary across multiple dental
 5. All unit tests pass via `pytest`.
 
 ## Implementation Details
-- Structure code by feature, not file type
-- Every file has one purpose (single-responsibility principle)
+- Use Typer for command-line interface parsing
+- Use Rich for progress spinners, tables, and color-coded output
+- Structure code by feature, not file type; each file should follow the single-responsibility principle
 - Use descriptive, specific names
-- Define and use strict TypeScript types
 - Keep code clean, readable, and free of duplication
-- Follow feature-based structure
+- Strict typing with mypy (no `Any`)
 - Use Poetry for dependency management
 
 ## Required Technologies
-- Python 3.9+
-- OpenAI Assistants API v2
-- Poetry for package management 
-- pytest and hypothesis for testing
-- mypy for type checking 
+- Python ≥ 3.9
+- Poetry (for dependency management)
+- Typer (for CLI parsing)
+- Rich (for console output and spinners)
+- pandas (for CSV parsing and DataFrame handling)
+- openai (OpenAI Assistants API v2)
+- pytest and hypothesis (for testing)
+- mypy (for static type checking)
