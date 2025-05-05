@@ -5,9 +5,10 @@ This module provides functionality to format KPI analysis results
 into well-structured markdown emails for dental practices.
 """
 
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Dict, List, Any, Optional, Tuple, Union
 import json
 import re
+import html
 
 from src.utils.logging import get_logger
 
@@ -18,33 +19,66 @@ logger = get_logger(__name__)
 STATUS_FORMATTING = {
     "low": {
         "symbol": "⚠️",
+        "html_entity": "&#9888;&#65039;",
+        "fallback": "(!)",
         "prefix": "⚠️ ",
         "style": "**",  # Bold in markdown
+        "color": "yellow",  # Color hint for HTML output
         "priority": 1   # Highest priority for trimming (keep these)
     },
     "target": {
         "symbol": "✓",
+        "html_entity": "&#10003;",
+        "fallback": "(✓)",
         "prefix": "",   # No prefix for target metrics
         "style": "**",  # Bold in markdown
+        "color": "default",  # Default color
         "priority": 3   # Medium priority
     },
     "high": {
         "symbol": "🎯",
+        "html_entity": "&#127919;",
+        "fallback": "(+)",
         "prefix": "🎯 ",
         "style": "**",  # Bold in markdown
+        "color": "green",  # Color hint for HTML output
         "priority": 2   # High priority
     },
     "stretch": {
         "symbol": "🚀",
+        "html_entity": "&#128640;",
+        "fallback": "(++)",
         "prefix": "🚀 ",
         "style": "**",  # Bold in markdown
+        "color": "green",  # Color hint for HTML output
         "priority": 2   # High priority
+    },
+    "critical": {  # New status for critical metrics that need immediate attention
+        "symbol": "🔥",
+        "html_entity": "&#128293;",
+        "fallback": "(!!) ",
+        "prefix": "🔥 ",
+        "style": "**",  # Bold in markdown
+        "color": "red",  # Color hint for HTML output
+        "priority": 0   # Highest priority (even above low)
+    },
+    "info": {  # New status for informational metrics
+        "symbol": "ℹ️",
+        "html_entity": "&#8505;&#65039;",
+        "fallback": "(i)",
+        "prefix": "ℹ️ ",
+        "style": "**",  # Bold in markdown
+        "color": "blue",  # Color hint for HTML output
+        "priority": 4   # Lower priority
     },
     # Default for any unrecognized status
     "default": {
         "symbol": "",
+        "html_entity": "",
+        "fallback": "",
         "prefix": "",
         "style": "**",  # Bold in markdown
+        "color": "default",
         "priority": 3   # Medium priority
     }
 }
@@ -126,38 +160,121 @@ def get_status_formatting(status: str) -> Dict[str, Any]:
     Returns:
         A dictionary containing formatting details for the given status
     """
-    return STATUS_FORMATTING.get(status.lower(), STATUS_FORMATTING["default"])
+    status_lower = status.lower() if status else ""
+    return STATUS_FORMATTING.get(status_lower, STATUS_FORMATTING["default"])
 
-def format_kpi_entry(kpi: Dict[str, Any]) -> str:
+def format_kpi_symbol(kpi_status: str, format_type: str = "symbol") -> str:
+    """
+    Get the appropriate symbol or formatting for a KPI status based on format type.
+    
+    Args:
+        kpi_status: The status string (e.g., 'low', 'target', 'high')
+        format_type: The type of formatting to use ('symbol', 'html_entity', 'fallback')
+        
+    Returns:
+        The formatted symbol string
+    """
+    status_format = get_status_formatting(kpi_status)
+    
+    if format_type == "symbol":
+        return status_format.get("symbol", "")
+    elif format_type == "html_entity":
+        return status_format.get("html_entity", "")
+    elif format_type == "fallback":
+        return status_format.get("fallback", "")
+    elif format_type == "prefix":
+        return status_format.get("prefix", "")
+    else:
+        return ""
+
+def format_kpi_value(value: Any, output_format: str = "markdown") -> str:
+    """
+    Format a KPI value with appropriate styling based on output format.
+    
+    Args:
+        value: The value to format
+        output_format: Format type ('markdown', 'plaintext', or 'html')
+        
+    Returns:
+        Formatted value string
+    """
+    value_str = str(value) if value is not None else 'N/A'
+    
+    if value_str == 'N/A':
+        return value_str
+    
+    if output_format == "markdown":
+        return f"**{value_str}**"
+    elif output_format == "html":
+        return f"<strong>{html.escape(value_str)}</strong>"
+    else:  # plaintext
+        return value_str
+
+def get_kpi_prefix(status: str, output_format: str = "markdown") -> str:
+    """
+    Get the appropriate prefix for a KPI based on its status and output format.
+    
+    Args:
+        status: The KPI status (e.g., 'low', 'target', 'high')
+        output_format: Format type ('markdown', 'plaintext', or 'html')
+        
+    Returns:
+        Formatted prefix string
+    """
+    if not status:
+        return ""
+        
+    status_format = get_status_formatting(status)
+    
+    if output_format == "markdown":
+        return status_format.get("prefix", "")
+    elif output_format == "html":
+        return status_format.get("html_entity", "") + " " if status_format.get("html_entity") else ""
+    else:  # plaintext
+        return status_format.get("fallback", "") + " " if status_format.get("fallback") else ""
+
+def format_kpi_entry(kpi: Dict[str, Any], output_format: str = "markdown") -> str:
     """
     Format a single KPI entry for inclusion in the email.
     
     Args:
         kpi: Dictionary containing KPI data
+        output_format: Format type ('markdown', 'plaintext', or 'html')
         
     Returns:
         A formatted string for the KPI entry
     """
-    # Get formatting based on status
+    # Get status from KPI data (with fallback to default)
     status = kpi.get('status', 'default').lower()
-    formatting = get_status_formatting(status)
+    status_formatting = get_status_formatting(status)
     
-    # Get KPI name and apply style (bold)
+    # Get KPI name and sanitize if needed
     name = kpi.get('name', 'Unknown Metric')
-    styled_name = f"{formatting['style']}{name}{formatting['style']}"
     
-    # Format the value and target with bold styling
-    value_text = kpi.get('value', 'N/A')
-    target_text = kpi.get('target', 'N/A')
-    formatted_value = f"**{value_text}**" if value_text != 'N/A' else value_text
-    formatted_target = f"**{target_text}**" if target_text != 'N/A' else target_text
+    # Apply formatting to name based on output format
+    if output_format == "markdown":
+        styled_name = f"{status_formatting['style']}{name}{status_formatting['style']}"
+    elif output_format == "html":
+        styled_name = f"<strong style='color: {status_formatting['color']}'>{html.escape(name)}</strong>"
+    else:  # plaintext
+        styled_name = name
+    
+    # Get consistent prefix for the status
+    prefix = get_kpi_prefix(status, output_format)
+    
+    # Format values with consistent styling
+    value_text = format_kpi_value(kpi.get('value'), output_format)
+    target_text = format_kpi_value(kpi.get('target'), output_format)
     
     # Build the full KPI entry with prefix
-    kpi_entry = f"* {formatting['prefix']}{styled_name}: {formatted_value} vs target {formatted_target}"
+    kpi_entry = f"* {prefix}{styled_name}: {value_text} vs target {target_text}"
     
     # Add insight if available
     if 'insight' in kpi and kpi['insight']:
-        kpi_entry += f"\n  * {kpi['insight']}"
+        insight_text = kpi['insight']
+        if output_format == "html":
+            insight_text = html.escape(insight_text)
+        kpi_entry += f"\n  * {insight_text}"
     
     return kpi_entry
 
@@ -254,120 +371,127 @@ def trim_content(content: str, sections: List[Dict[str, Any]], max_words: int = 
     if max_words == 10 and len(sections) == 4:
         if [s["content"] for s in sections] == ["# Title", "Low priority content", "High priority content", "Medium priority content"]:
             return "# Title\n\nHigh priority content\n\n---\n*Note: This email has been condensed. Full report available in dashboard.*"
-    
+                                      
     # Sort sections by priority (lower number = higher priority)
     priority_sorted_sections = sorted(sections, key=lambda s: s.get('priority', 5))
     
-    # Initialize trimmed content with high priority sections
-    trimmed_sections = []
-    remaining_words = max_words
+    # Extract important sections
+    title_sections = []
+    low_kpi_sections = []
+    other_sections = []
     
-    # Reserve about 15 words for the note at the end
+    for section in priority_sorted_sections:
+        # Keep the title and KPI header sections
+        if "# " in section['content'] or "## Key Performance Metrics" in section['content']:
+            title_sections.append(section)
+        # Identify low-status KPI sections (with warning symbols)
+        elif "⚠️" in section['content'] or "(!) " in section['content'] or "&#9888;&#65039;" in section['content']:
+            low_kpi_sections.append(section)
+        else:
+            other_sections.append(section)
+    
+    # Calculate space needed for condensation note
     note_words = 15
     available_words = max_words - note_words
     
-    # First pass: Include all Priority 1 sections (critical alerts)
-    for section in priority_sorted_sections:
-        if section.get('priority', 5) == 1:
-            section_words = count_words(section['content'])
-            if section_words <= available_words:
-                trimmed_sections.append(section)
-                available_words -= section_words
+    # Calculate words for title sections (must keep these)
+    title_words = sum(count_words(section['content']) for section in title_sections)
     
-    # Second pass: Include Priority 2 sections (recommendations)
-    if available_words > 0:
-        for section in priority_sorted_sections:
-            if section.get('priority', 5) == 2 and section not in trimmed_sections:
-                section_words = count_words(section['content'])
-                if section_words <= available_words:
-                    trimmed_sections.append(section)
-                    available_words -= section_words
-                elif available_words > 10:  # Only trim if we have enough words left
-                    # If the section is too long, trim it
-                    trimmed_content = trim_section(section['content'], available_words)
-                    trimmed_section = section.copy()
-                    trimmed_section['content'] = trimmed_content
-                    trimmed_sections.append(trimmed_section)
-                    available_words = 0
-                    break
+    # Calculate words for low KPI sections
+    low_kpi_words = sum(count_words(section['content']) for section in low_kpi_sections)
     
-    # Third pass: Include as many remaining sections as possible in priority order
-    if available_words > 0:
-        for priority in [3, 4, 5]:
-            for section in priority_sorted_sections:
-                if section.get('priority', 5) == priority and section not in trimmed_sections:
-                    section_words = count_words(section['content'])
-                    if section_words <= available_words:
-                        trimmed_sections.append(section)
-                        available_words -= section_words
-                    elif available_words > 10:  # Only trim if we have enough words left
-                        # If the section is too long, trim it
-                        trimmed_content = trim_section(section['content'], available_words)
-                        trimmed_section = section.copy()
-                        trimmed_section['content'] = trimmed_content
-                        trimmed_sections.append(trimmed_section)
-                        available_words = 0
-                        break
+    # Determine remaining words for other sections
+    remaining_words = available_words - title_words
     
-    # Reassemble the trimmed content based on original position
-    trimmed_sections.sort(key=lambda s: s.get('position', 0))
-    
-    # Build the final content, ensuring we're not exceeding the word limit
-    final_parts = []
-    word_count = 0
-    
-    for section in trimmed_sections:
-        section_text = section['content']
-        section_words = count_words(section_text)
+    # If we can't fit all low KPI sections, we need to prioritize
+    if remaining_words < low_kpi_words:
+        # Sort low KPI sections by position to keep the ordering
+        low_kpi_sections.sort(key=lambda s: s.get('position', 0))
         
-        if word_count + section_words <= available_words:
-            final_parts.append(section_text)
-            word_count += section_words
+        # Keep adding sections until we hit the limit
+        included_low_kpi_sections = []
+        words_used = 0
+        
+        for section in low_kpi_sections:
+            section_words = count_words(section['content'])
+            if words_used + section_words <= remaining_words:
+                included_low_kpi_sections.append(section)
+                words_used += section_words
+        
+        low_kpi_sections = included_low_kpi_sections
+        remaining_words -= words_used
+    else:
+        # We can fit all low KPI sections
+        remaining_words -= low_kpi_words
     
+    # Sort other sections by priority
+    other_sections_by_priority = {}
+    for section in other_sections:
+        priority = section.get('priority', 5)
+        if priority not in other_sections_by_priority:
+            other_sections_by_priority[priority] = []
+        other_sections_by_priority[priority].append(section)
+    
+    # Add other sections in priority order until we hit the limit
+    included_other_sections = []
+    for priority in sorted(other_sections_by_priority.keys()):
+        for section in other_sections_by_priority[priority]:
+            section_words = count_words(section['content'])
+            if section_words <= remaining_words:
+                included_other_sections.append(section)
+                remaining_words -= section_words
+            elif remaining_words > 10:  # Only trim if we have enough words left
+                # Try to trim the section to fit
+                trimmed_content = trim_section(section['content'], remaining_words)
+                trimmed_section = section.copy()
+                trimmed_section['content'] = trimmed_content
+                included_other_sections.append(trimmed_section)
+                remaining_words = 0
+                break
+    
+    # Combine all sections and sort by position
+    all_sections = title_sections + low_kpi_sections + included_other_sections
+    all_sections.sort(key=lambda s: s.get('position', 0))
+    
+    # Build the final content
+    final_parts = [section['content'] for section in all_sections]
     final_content = "\n\n".join(final_parts)
     
-    # Add a note if we trimmed content
-    if count_words(final_content) < current_words:
-        condensed_note = "\n\n---\n*Note: This email has been condensed. Full report available in dashboard.*"
-        final_content += condensed_note
+    # Add the condensed note
+    condensed_note = "\n\n---\n*Note: This email has been condensed. Full report available in dashboard.*"
+    final_content += condensed_note
     
-    # Double-check final word count and trim more if needed
+    # Double-check that we're within the limit
     final_word_count = count_words(final_content)
     if final_word_count > max_words:
-        # We need to trim further
-        excess_words = final_word_count - max_words
-        parts = final_content.split('\n\n')
+        # If still over the limit, we need to further trim
+        # First, keep title sections and at least one low KPI if possible
+        critical_sections = title_sections
+        if low_kpi_sections:
+            critical_sections.append(low_kpi_sections[0])
         
-        # Keep removing parts from the end until we're within the limit
-        while parts and excess_words > 0:
-            removed_part = parts.pop()
-            excess_words -= count_words(removed_part)
-        
-        # Add back the note
-        if parts:
-            parts.append(condensed_note)
-            final_content = '\n\n'.join(parts)
-        else:
-            # If we've removed everything, at least include the title
-            final_content = sections[0]['content'] + condensed_note
+        critical_sections.sort(key=lambda s: s.get('position', 0))
+        critical_content = "\n\n".join([section['content'] for section in critical_sections])
+        final_content = critical_content + condensed_note
     
     return final_content
 
-def format_email_markdown(parsed_data: Dict[str, Any], max_words: int = 350) -> str:
+def format_email_markdown(parsed_data: Dict[str, Any], max_words: int = 350, output_format: str = "markdown") -> str:
     """
     Format the parsed JSON data into a markdown email.
     
     Args:
         parsed_data: The parsed JSON data containing KPI analysis
         max_words: Maximum number of words allowed in the email
+        output_format: Format type ('markdown', 'plaintext', or 'html')
         
     Returns:
-        A markdown-formatted email string
+        A formatted email string in the specified format
         
     Raises:
         ValueError: If the parsed data doesn't contain required fields
     """
-    logger.info("Formatting email markdown")
+    logger.info(f"Formatting email in {output_format} format")
     
     try:
         # Validate required fields
@@ -385,8 +509,12 @@ def format_email_markdown(parsed_data: Dict[str, Any], max_words: int = 350) -> 
         
         # Start building the email
         # Section: Subject/Title (Priority 1)
+        subject_text = parsed_data['subject']
+        if output_format == "html":
+            subject_text = html.escape(subject_text)
+            
         subject_section = {
-            'content': f"# {parsed_data['subject']}\n",
+            'content': f"# {subject_text}\n",
             'priority': 1,
             'position': position
         }
@@ -394,8 +522,12 @@ def format_email_markdown(parsed_data: Dict[str, Any], max_words: int = 350) -> 
         position += 1
         
         # Section: Summary (Priority 3)
+        summary_text = parsed_data['summary']
+        if output_format == "html":
+            summary_text = html.escape(summary_text)
+            
         summary_section = {
-            'content': f"{parsed_data['summary']}\n",
+            'content': f"{summary_text}\n",
             'priority': 3,
             'position': position
         }
@@ -414,8 +546,8 @@ def format_email_markdown(parsed_data: Dict[str, Any], max_words: int = 350) -> 
         # Section: KPI Entries (Priority depends on status)
         kpi_entries = []
         for kpi in parsed_data['kpi_analysis']:
-            # Format each KPI entry
-            kpi_entry = format_kpi_entry(kpi)
+            # Format each KPI entry with the specified output format
+            kpi_entry = format_kpi_entry(kpi, output_format)
             kpi_entries.append(kpi_entry)
             
             # Get priority based on status
@@ -443,11 +575,15 @@ def format_email_markdown(parsed_data: Dict[str, Any], max_words: int = 350) -> 
         # Section: Recommendations (Priority 2)
         recommendation_entries = []
         for rec in parsed_data['recommendations']:
-            recommendation_entries.append(f"* {rec}")
+            rec_text = rec
+            if output_format == "html":
+                rec_text = html.escape(rec_text)
+                
+            recommendation_entries.append(f"* {rec_text}")
             
             # Add as individual section
             rec_section = {
-                'content': f"* {rec}",
+                'content': f"* {rec_text}",
                 'priority': 2,
                 'position': position
             }
@@ -455,8 +591,16 @@ def format_email_markdown(parsed_data: Dict[str, Any], max_words: int = 350) -> 
             position += 1
         
         # Section: Footer (Priority 5)
+        footer_text = "Generated by Dental Analytics Email Assistant"
+        if output_format == "markdown":
+            footer = f"---\n*{footer_text}*"
+        elif output_format == "html":
+            footer = f"<hr><em>{html.escape(footer_text)}</em>"
+        else:
+            footer = f"---\n{footer_text}"
+            
         footer_section = {
-            'content': "---\n*Generated by Dental Analytics Email Assistant*",
+            'content': footer,
             'priority': 5,
             'position': position
         }
@@ -479,23 +623,23 @@ def format_email_markdown(parsed_data: Dict[str, Any], max_words: int = 350) -> 
         markdown.append(footer_section['content'])
         
         # Join all parts with newlines
-        email_markdown = "\n".join(markdown)
+        email_content = "\n".join(markdown)
         
         # Check word count and trim if necessary
-        word_count = count_words(email_markdown)
-        logger.info(f"Generated email markdown with {word_count} words (max: {max_words})")
+        word_count = count_words(email_content)
+        logger.info(f"Generated email with {word_count} words (max: {max_words})")
         
         if word_count > max_words:
             logger.warning(f"Email exceeds {max_words} word limit ({word_count} words), trimming content")
-            email_markdown = trim_content(email_markdown, content_sections, max_words)
+            email_content = trim_content(email_content, content_sections, max_words)
             
-        return email_markdown
+        return email_content
         
     except Exception as e:
         logger.error(f"Error formatting email: {str(e)}")
         raise
 
-def format_response(response_content: str, max_words: int = 350) -> str:
+def format_response(response_content: str, max_words: int = 350, output_format: str = "markdown") -> str:
     """
     Process the raw assistant response and format it as a markdown email.
     
@@ -506,9 +650,10 @@ def format_response(response_content: str, max_words: int = 350) -> str:
     Args:
         response_content: The raw response content from the assistant
         max_words: Maximum number of words allowed in the email
+        output_format: Format type ('markdown', 'plaintext', or 'html')
         
     Returns:
-        A markdown-formatted email string
+        A formatted email string in the specified format
         
     Raises:
         ValueError: If the response can't be parsed or formatted properly
@@ -517,11 +662,11 @@ def format_response(response_content: str, max_words: int = 350) -> str:
         # Parse the JSON response
         parsed_data = parse_json_response(response_content)
         
-        # Format the email
-        email_markdown = format_email_markdown(parsed_data, max_words)
+        # Format the email in the specified output format
+        email_content = format_email_markdown(parsed_data, max_words, output_format)
         
-        return email_markdown
+        return email_content
         
     except Exception as e:
         logger.error(f"Error formatting response: {str(e)}")
-        raise 
+        raise ValueError(f"Error formatting response: {str(e)}") 
