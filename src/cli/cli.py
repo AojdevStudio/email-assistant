@@ -9,15 +9,22 @@ import sys
 from pathlib import Path
 from typing import Optional
 import argparse
+from datetime import datetime
 
 from rich.console import Console
-from rich.panel import Panel
 
 from src.utils.logging import get_logger
 from src.email.generator import EmailGenerator
 from src.data.loader import load_kpi_data
 from src.data.analyzer import analyze_kpi_data
 from src.cli.email_command import setup_email_parser
+from src.utils.display import (
+    display_welcome_message, 
+    display_analysis_summary, 
+    display_success, 
+    display_error
+)
+from src.utils.file_output import save_analysis_results, ensure_output_directory
 
 # Initialize logger
 logger = get_logger(__name__)
@@ -92,49 +99,34 @@ def analyze_command(args):
         logger.info(f"Starting analysis of {args.file}")
         
         # Display a welcome message
-        console.print(
-            Panel.fit(
-                f"[bold green]Dental Email Assistant[/bold green]\n"
-                f"Analyzing KPI data from: [bold]{args.file}[/bold]",
-                title="Welcome",
-                border_style="blue",
-            )
-        )
+        display_welcome_message(args.file)
         
         # Load and analyze data
         kpi_data = load_kpi_data(args.file)
         analysis_results = analyze_kpi_data(kpi_data)
         
-        # Print analysis summary
-        console.print(
-            Panel.fit(
-                f"Analysis complete:\n"
-                f"Metrics below target: [bold red]{analysis_results['summary']['metrics_below_target']}[/bold red]\n"
-                f"Metrics at target: [bold yellow]{analysis_results['summary']['metrics_at_target']}[/bold yellow]\n" 
-                f"Metrics above target: [bold green]{analysis_results['summary']['metrics_above_target']}[/bold green]\n",
-                title="Analysis Results",
-                border_style="green",
-            )
-        )
+        # Display analysis summary
+        display_analysis_summary(analysis_results)
         
         # Save files if requested
         if args.save:
-            output_path = Path(args.output)
-            output_path.mkdir(parents=True, exist_ok=True)
-            
-            # Save analysis as JSON
-            analysis_file = output_path / "analysis.json"
-            with open(analysis_file, 'w') as f:
-                import json
-                json.dump(analysis_results, f, indent=2)
-            
-            console.print(f"Analysis saved to: [bold]{analysis_file}[/bold]")
-            
+            try:
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                saved_file = save_analysis_results(
+                    analysis_results=analysis_results,
+                    output_dir=args.output,
+                    timestamp=timestamp
+                )
+                display_success(f"Analysis saved to: {saved_file}")
+            except Exception as e:
+                display_error(f"Failed to save analysis results: {str(e)}")
+                logger.error(f"Error saving analysis results: {str(e)}")
+        
         return 0
     
     except Exception as e:
         logger.error(f"Error during analysis: {str(e)}", exc_info=True)
-        console.print(f"[bold red]Error:[/bold red] {str(e)}")
+        display_error(str(e))
         return 1
 
 

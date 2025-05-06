@@ -8,6 +8,7 @@ from the OpenAI Assistant's response, using the KPI analysis results.
 from typing import Dict, Any, Optional, List, Union
 import time
 from datetime import datetime
+import pandas as pd
 
 from src.email.formatter import format_response, parse_json_response
 from src.openai.client import OpenAIClient
@@ -104,12 +105,42 @@ class EmailGenerator:
             ValueError: If the OpenAI API call fails
         """
         try:
-            # Use the OpenAI client's process_kpi_data method
+            logger.info("Processing analysis results with OpenAI")
+            
+            # Extract the original data DataFrame from analysis_results
+            # If 'original_data' is provided, use it; otherwise, use 'data' field directly
+            df = analysis_results.get("original_data")
+            
+            # If original_data is not available, check if 'data' is a DataFrame
+            if df is None:
+                data_field = analysis_results.get("data")
+                if isinstance(data_field, pd.DataFrame):
+                    df = data_field
+                else:
+                    error_msg = "Analysis results must contain either 'original_data' or 'data' as a DataFrame"
+                    logger.error(error_msg)
+                    raise ValueError(error_msg)
+            
+            # Create a system prompt specifically for email generation
+            system_prompt = self._get_email_system_prompt(analysis_results)
+            
+            # Extract benchmarks if available
+            benchmarks = None
+            if "benchmarks" in analysis_results and isinstance(analysis_results["benchmarks"], pd.DataFrame):
+                benchmarks = analysis_results["benchmarks"]
+            
+            # Generate a deterministic seed if needed for reproducibility
+            seed = analysis_results.get("seed")
+            
+            # Call the OpenAI client to process the data and generate a response
             response = self.openai_client.process_kpi_data(
-                df=analysis_results.get("data", {}),
-                system_prompt=self._get_email_system_prompt(analysis_results),
-                benchmark_df=analysis_results.get("benchmarks", None)
+                df=df,
+                system_prompt=system_prompt,
+                benchmark_df=benchmarks,
+                seed=seed
             )
+            
+            logger.info("Successfully received response from OpenAI")
             
             return response
             
